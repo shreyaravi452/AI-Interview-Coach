@@ -1,7 +1,4 @@
-import json
-
 from prompt_versions import (
-    PromptVersion,
     build_prompt,
     get_prompt_version,
     get_prompt_versions,

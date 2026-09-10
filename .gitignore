@@ -1,0 +1,34 @@
+# Environment variables
+.env
+.env.*
+!.env.example
+.envrc
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Databases and local runtime state
+*.db
+*.sqlite
+*.sqlite3
+*.log
+logs/
+
+# Coverage and test artifacts
+.coverage
+.coverage.*
+coverage/
+htmlcov/
+
+# Secret / key material
+*.pem
+*.key
+*.crt
+*.csr
+secrets/
+
+# macOS
+.DS_Store

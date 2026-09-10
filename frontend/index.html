@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Interview Coach</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+
+        #root {
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 40px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .logo h1 {
+            font-size: 2.5em;
+            font-weight: 300;
+            margin-bottom: 10px;
+        }
+
+        .logo p {
+            font-size: 1.1em;
+            opacity: 0.8;
+        }
+
+        .form-group {
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.9;
+        }
+
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        input[type="text"]::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        select {
+            cursor: pointer;
+        }
+
+        select option {
+            background: #333;
+            color: white;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+            color: white;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .interview-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 40px;
+        }
+
+        .interviewer-section {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .interviewer-name {
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+
+        .question-text {
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin: 20px 0;
+            font-weight: 300;
+        }
+
+        .status-text {
+            font-size: 0.9em;
+            opacity: 0.7;
+            margin-top: 15px;
+        }
+
+        .recording-section {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .record-button {
+            font-size: 1em;
+            padding: 20px;
+            background: rgba(255, 100, 100, 0.8);
+            margin-bottom: 15px;
+        }
+
+        .record-button.recording {
+            background: rgba(255, 50, 50, 1);
+            animation: pulse 0.6s infinite;
+        }
+
+        .record-button.processing {
+            background: rgba(130, 130, 130, 0.8);
+            border-color: rgba(210, 210, 210, 0.5);
+            cursor: wait;
+            transform: none;
+        }
+
+        .timer {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin: 10px 0 15px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .answer-text {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: left;
+            min-height: 50px;
+        }
+
+        .submit-button {
+            background: rgba(100, 200, 100, 0.8);
+            margin-top: 15px;
+        }
+
+        .evaluation-result {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 600px;
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        .score {
+            font-size: 2em;
+            font-weight: bold;
+            color: #ffd700;
+            margin-bottom: 15px;
+        }
+
+        .score-breakdown {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+
+        .metric {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .strengths, .weaknesses {
+            margin: 15px 0;
+        }
+
+        .strengths h4, .weaknesses h4 {
+            margin-bottom: 8px;
+            opacity: 0.8;
+        }
+
+        .list {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-left: 15px;
+        }
+
+        .report-container {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            border-radius: 15px;
+            max-width: 700px;
+            text-align: center;
+        }
+
+        .recommendation {
+            font-size: 1.5em;
+            font-weight: bold;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .recommendation.strong-yes {
+            background: rgba(100, 200, 100, 0.3);
+            color: #90EE90;
+        }
+
+        .recommendation.yes {
+            background: rgba(100, 180, 200, 0.3);
+            color: #87CEEB;
+        }
+
+        .recommendation.maybe {
+            background: rgba(255, 200, 100, 0.3);
+            color: #FFD700;
+        }
+
+        .recommendation.no {
+            background: rgba(200, 100, 100, 0.3);
+            color: #FF6B6B;
+        }
+
+        .summary {
+            text-align: left;
+            line-height: 1.6;
+            margin: 20px 0;
+            opacity: 0.9;
+        }
+
+        .error {
+            background: rgba(255, 100, 100, 0.2);
+            border: 1px solid rgba(255, 100, 100, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .error-close {
+            width: auto;
+            padding: 0 5px;
+            background: transparent;
+            border: 0;
+            font-size: 1.4em;
+            line-height: 1;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        const JOB_ROLES = [
+            "Backend Engineer",
+            "Frontend Engineer",
+            "Full Stack Engineer",
+            "Product Manager",
+            "DevOps Engineer",
+            "Data Scientist"
+        ];
+
+        const INTERVIEWERS = {
+            "friendly_mentor": "Friendly Mentor",
+            "tough_tech_lead": "Tough Tech Lead",
+            "practical_pm": "Practical Product Manager",
+            "supportive_coach": "Supportive Coach",
+            "behavioral_specialist": "Behavioral Specialist",
+            "systems_architect": "Systems Architect",
+            "startup_founder": "Startup Founder",
+            "rapid_fire_interviewer": "Rapid-Fire Interviewer"
+        };
+
+        const API_BASE_URL = ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname)
+            ? "http://localhost:8000"
+            : "https://ai-interview-coach-api.onrender.com";
+
+        function App() {
+            const [screen, setScreen] = useState("setup"); // setup, interview, evaluation, report
+            const [candidateName, setCandidateName] = useState("");
+            const [role, setRole] = useState("Backend Engineer");
+            const [difficulty, setDifficulty] = useState("mid");
+            const [topic, setTopic] = useState("");
+            const [persona, setPersona] = useState("friendly_mentor");
+            const [ws, setWs] = useState(null);
+            const [error, setError] = useState("");
+            const [interviewing, setInterviewing] = useState(false);
+
+            // Interview state
+            const [interviewerName, setInterviewerName] = useState("");
+            const [totalQuestions, setTotalQuestions] = useState(0);
+            const [currentQuestion, setCurrentQuestion] = useState(0);
+            const [generationStatus, setGenerationStatus] = useState("");
+            const [questionText, setQuestionText] = useState("");
+            const [questionAudio, setQuestionAudio] = useState(null);
+            const [questionReady, setQuestionReady] = useState(false);
+            const [recording, setRecording] = useState(false);
+            const [recordingSeconds, setRecordingSeconds] = useState(60);
+            const [processingAudio, setProcessingAudio] = useState(false);
+            const [evaluation, setEvaluation] = useState(null);
+            const [showEvaluation, setShowEvaluation] = useState(false);
+            const [awaitingCompletion, setAwaitingCompletion] = useState(false);
+            const [finalReport, setFinalReport] = useState(null);
+
+            // Media recorder
+            const mediaRecorderRef = useRef(null);
+            const audioChunksRef = useRef([]);
+            const audioRef = useRef(null);
+            const recordingTimerRef = useRef(null);
+
+            // Start interview
+            const startInterview = () => {
+                if (!candidateName.trim()) {
+                    setError("Please enter your name");
+                    return;
+                }
+                if (!topic.trim()) {
+                    setError("Please enter an interview topic");
+                    return;
+                }
+
+                setError("");
+                setScreen("interview");
+                setInterviewing(true);
+
+                // Connect to WebSocket
+                const websocket = new WebSocket(`${API_BASE_URL.replace("http", "ws")}/ws/interview`);
+
+                websocket.onopen = () => {
+                    const config = {
+                        candidate_name: candidateName,
+                        role: role,
+                        difficulty: difficulty,
+                        topic: topic,
+                        persona: persona
+                    };
+                    websocket.send(JSON.stringify(config));
+                };
+
+                websocket.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+
+                    if (data.type === "interview_start") {
+                        setInterviewerName(data.interviewer_name);
+                        setTotalQuestions(data.total_questions);
+                        setCurrentQuestion(1);
+                        setGenerationStatus(`Generating question 1 of ${data.total_questions}...`);
+                    } else if (data.type === "question") {
+                        setCurrentQuestion(data.question_number);
+                        setQuestionText(data.text);
+                        setQuestionAudio(data.audio);
+                        setShowEvaluation(false);
+                        setAwaitingCompletion(false);
+                        setGenerationStatus("");
+                        setQuestionReady(false);
+                        setRecording(false);
+                        setRecordingSeconds(60);
+                        setProcessingAudio(false);
+
+                        // Play question audio
+                        playAudio(data.audio);
+                    } else if (data.type === "status") {
+                        if (data.phase === "generation") {
+                            setGenerationStatus(data.message);
+                        } else {
+                            setGenerationStatus("");
+                        }
+                        if (data.phase === "generation" && data.question_number) {
+                            setCurrentQuestion(data.question_number);
+                        }
+                    } else if (data.type === "evaluation") {
+                        setEvaluation(data);
+                        setShowEvaluation(true);
+                        setAwaitingCompletion(data.question_number === data.total_questions);
+                        if (data.final_report) {
+                            setFinalReport(data.final_report);
+                        }
+                    } else if (data.type === "interview_complete") {
+                        setFinalReport(data.report);
+                        setInterviewing(false);
+                        setScreen("report");
+                        websocket.close();
+                    } else if (data.type === "error") {
+                        setError(data.message);
+                    }
+                };
+
+                websocket.onerror = () => {
+                    setError("Failed to connect to interview server");
+                };
+
+                setWs(websocket);
+            };
+
+            // Play audio from base64
+            const playAudio = (audio_base64) => {
+                const binaryString = window.atob(audio_base64);
+                const bytes = new Uint8Array(binaryString.length);
+                for (let i = 0; i < binaryString.length; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                const audioBlob = new Blob([bytes], { type: "audio/mpeg" });
+                const audioUrl = URL.createObjectURL(audioBlob);
+
+                if (audioRef.current) {
+                    audioRef.current.src = audioUrl;
+                    audioRef.current.onended = () => setQuestionReady(true);
+                    audioRef.current.play().catch(() => {
+                        setError("Question audio could not be played");
+                    });
+                }
+            };
+
+            // Toggle recording so the same control starts and stops the answer.
+            const toggleRecording = async () => {
+                if (processingAudio) {
+                    return;
+                }
+
+                if (recording) {
+                    stopRecording();
+                    return;
+                }
+
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    const mediaRecorder = new MediaRecorder(stream);
+                    audioChunksRef.current = [];
+
+                    mediaRecorder.ondataavailable = (e) => {
+                        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                            const audioBase64 = reader.result.split(",")[1];
+                            if (ws && ws.readyState === WebSocket.OPEN) {
+                                ws.send(JSON.stringify({
+                                    type: "answer",
+                                    audio_base64: audioBase64,
+                                    mime_type: "audio/webm"
+                                }));
+                            } else {
+                                setProcessingAudio(false);
+                                setError("Interview connection was lost");
+                            }
+                        };
+                        reader.readAsDataURL(audioBlob);
+                        stream.getTracks().forEach(track => track.stop());
+                    };
+
+                    mediaRecorderRef.current = mediaRecorder;
+                    mediaRecorder.start();
+                    setRecordingSeconds(60);
+                    setRecording(true);
+                    recordingTimerRef.current = setTimeout(stopRecording, 60000);
+                } catch (err) {
+                    setError("Microphone access denied");
+                }
+            };
+
+            // Stop recording
+            const stopRecording = () => {
+                if (recordingTimerRef.current) {
+                    clearTimeout(recordingTimerRef.current);
+                    recordingTimerRef.current = null;
+                }
+
+                if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+                    mediaRecorderRef.current.stop();
+                    setRecording(false);
+                    setProcessingAudio(true);
+                }
+            };
+
+            const continueToNextQuestion = () => {
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    setShowEvaluation(false);
+                    setQuestionReady(false);
+                    setQuestionText("");
+                    setGenerationStatus(`Generating question ${currentQuestion + 1} of ${totalQuestions}...`);
+                    ws.send(JSON.stringify({ type: "continue" }));
+                }
+            };
+
+            const completeInterview = () => {
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({ type: "complete" }));
+                    if (finalReport) {
+                        setInterviewing(false);
+                        setScreen("report");
+                    }
+                }
+            };
+
+            const renderSummary = (summary) => summary.split("\n").map((line, index) => {
+                const parts = line.split(/(\*\*.*?\*\*)/g);
+                return (
+                    <div key={index}>
+                        {parts.map((part, partIndex) => part.startsWith("**")
+                            ? <strong key={partIndex}>{part.slice(2, -2)}</strong>
+                            : part)}
+                    </div>
+                );
+            });
+
+            useEffect(() => {
+                if (!recording) {
+                    return undefined;
+                }
+
+                const interval = setInterval(() => {
+                    setRecordingSeconds(seconds => Math.max(seconds - 1, 0));
+                }, 1000);
+
+                return () => clearInterval(interval);
+            }, [recording]);
+
+            // Setup screen
+            if (screen === "setup") {
+                return (
+                    <div className="container">
+                        <div className="logo">
+                            <h1>AI Interview Coach</h1>
+                            <p>Practice technical interviews with an AI interviewer</p>
+                        </div>
+
+                        {error && (
+                            <div className="error" role="alert">
+                                <span>{error}</span>
+                                <button
+                                    className="error-close"
+                                    type="button"
+                                    aria-label="Dismiss error"
+                                    onClick={() => setError("")}
+                                >
+                                    ×
+                                </button>
+                            </div>
+                        )}
+
+                        <div className="form-group">
+                            <label>Your Name</label>
+                            <input
+                                type="text"
+                                placeholder="Enter your name"
+                                value={candidateName}
+                                onChange={(e) => setCandidateName(e.target.value)}
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label>Job Role</label>
+                            <select value={role} onChange={(e) => setRole(e.target.value)}>
+                                {JOB_ROLES.map(r => (
+                                    <option key={r} value={r}>{r}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="form-group">
+                            <label>Interview Topic</label>
+                            <input
+                                type="text"
+                                placeholder="Enter a topic (e.g., Database)"
+                                value={topic}
+                                onChange={(e) => setTopic(e.target.value)}
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label>Difficulty Level</label>
+                            <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
+                                <option value="junior">Junior (3 questions)</option>
+                                <option value="mid">Mid-Level (4 questions)</option>
+                                <option value="senior">Senior (5 questions)</option>
+                            </select>
+                        </div>
+
+                        <div className="form-group">
+                            <label>Interviewer Style</label>
+                            <select value={persona} onChange={(e) => setPersona(e.target.value)}>
+                                {Object.entries(INTERVIEWERS).map(([key, name]) => (
+                                    <option key={key} value={key}>{name}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <button onClick={startInterview}>Start Interview</button>
+                    </div>
+                );
+            }
+
+            // Interview screen
+            if (screen === "interview" && interviewing) {
+                return (
+                    <div className="interview-container">
+                        {error && (
+                            <div className="error" role="alert">
+                                <span>{error}</span>
+                                <button
+                                    className="error-close"
+                                    type="button"
+                                    aria-label="Dismiss error"
+                                    onClick={() => setError("")}
+                                >
+                                    ×
+                                </button>
+                            </div>
+                        )}
+                        <div className="interviewer-section">
+                            <div className="interviewer-name">🎤 {interviewerName}</div>
+                            <div className="status-text">
+                                {generationStatus || `Question ${currentQuestion} of ${totalQuestions}`}
+                            </div>
+                            <div className="question-text">{questionText}</div>
+                            <audio ref={audioRef} />
+                        </div>
+
+                        {showEvaluation ? (
+                            <div className="evaluation-result">
+                                <div className="score">Score: {evaluation.score}/10</div>
+                                <div className="answer-text">
+                                    <strong>Transcript:</strong> {evaluation.transcript}
+                                </div>
+                                <div className="score-breakdown">
+                                    <div className="metric">
+                                        <strong>Correctness:</strong> {evaluation.correctness}/10
+                                    </div>
+                                    <div className="metric">
+                                        <strong>Clarity:</strong> {evaluation.clarity}/10
+                                    </div>
+                                    <div className="metric">
+                                        <strong>Approach:</strong> {evaluation.approach}/10
+                                    </div>
+                                    <div className="metric">
+                                        <strong>Communication:</strong> {evaluation.communication}/10
+                                    </div>
+                                </div>
+                                <div className="strengths">
+                                    <h4>✓ Strengths</h4>
+                                    <div className="list">
+                                        {evaluation.strengths.map((s, i) => (
+                                            <div key={i}>• {s}</div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="weaknesses">
+                                    <h4>⚠ Areas to Improve</h4>
+                                    <div className="list">
+                                        {evaluation.weaknesses.map((w, i) => (
+                                            <div key={i}>• {w}</div>
+                                        ))}
+                                    </div>
+                                </div>
+                                {currentQuestion < totalQuestions && !awaitingCompletion && (
+                                    <button onClick={continueToNextQuestion}>
+                                        Continue to Next Question
+                                    </button>
+                                )}
+                                {awaitingCompletion && (
+                                    <button onClick={completeInterview}>
+                                        Complete Interview
+                                    </button>
+                                )}
+                            </div>
+                        ) : (
+                            questionReady ? (
+                                <div className="recording-section">
+                                    <div className="status-text">
+                                        {processingAudio ? "Processing your answer..." : "Start recording your answer below."}
+                                    </div>
+                                    {recording && (
+                                        <div className="timer" aria-live="polite">
+                                            {Math.floor(recordingSeconds / 60)}:{String(recordingSeconds % 60).padStart(2, "0")} remaining
+                                        </div>
+                                    )}
+                                    <div>
+                                        <button
+                                            className={`record-button${recording ? " recording" : ""}${processingAudio ? " processing" : ""}`}
+                                            onClick={toggleRecording}
+                                            disabled={processingAudio}
+                                        >
+                                            {processingAudio
+                                                ? "Processing audio..."
+                                                : recording
+                                                    ? "🎙️ Stop Recording"
+                                                    : "🎙️ Start Recording"}
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="status-text">Please wait while the interviewer finishes asking the question.</div>
+                            )
+                        )}
+                    </div>
+                );
+            }
+
+            // Report screen
+            if (screen === "report" && finalReport) {
+                const reportData = finalReport;
+                const recommendationClass = reportData.recommendation
+                    .toLowerCase()
+                    .replace(/ /g, "-");
+
+                return (
+                    <div className="interview-container">
+                        <div className="report-container">
+                            <h1>Interview Complete!</h1>
+                            <div className="status-text" style={{ marginTop: "20px" }}>
+                                {reportData.candidate_name} • {reportData.role} • {reportData.topic} • {reportData.difficulty_label}
+                            </div>
+
+                            <div className="score">
+                                {reportData.overall_score.toFixed(1)}/10
+                            </div>
+
+                            <div className="score-breakdown">
+                                <div className="metric">
+                                    Correctness: {reportData.correctness.toFixed(1)}/10
+                                </div>
+                                <div className="metric">
+                                    Clarity: {reportData.clarity.toFixed(1)}/10
+                                </div>
+                                <div className="metric">
+                                    Approach: {reportData.approach.toFixed(1)}/10
+                                </div>
+                                <div className="metric">
+                                    Communication: {reportData.communication.toFixed(1)}/10
+                                </div>
+                            </div>
+
+                            <div className={`recommendation ${recommendationClass}`}>
+                                Recommendation: {reportData.recommendation}
+                            </div>
+
+                            <div className="summary">
+                                {renderSummary(reportData.summary)}
+                            </div>
+
+                            <div className="summary">
+                                <strong>Question feedback</strong>
+                                {reportData.all_evaluations.map((item, index) => (
+                                    <div key={index} className="answer-text">
+                                        <strong>Question {index + 1}: {item.overall_score}/10</strong>
+                                        <div>Correctness: {item.correctness}/10</div>
+                                        <div>Clarity: {item.clarity}/10</div>
+                                        <div>Approach: {item.approach}/10</div>
+                                        <div>Communication: {item.communication}/10</div>
+                                        <div>Strengths: {item.strengths.join("; ")}</div>
+                                        <div>Areas to improve: {item.weaknesses.join("; ")}</div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <button onClick={() => {
+                                setScreen("setup");
+                                setCandidateName("");
+                            }}>
+                                Start New Interview
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
+            return <div className="container">Loading...</div>;
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById("root"));
+        root.render(<App />);
+    </script>
+</body>
+</html>

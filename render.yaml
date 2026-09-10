@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: ai-interview-coach-api
+    env: docker
+    plan: free
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ELEVENLABS_API_KEY
+        sync: false
+      - key: ANTHROPIC_MODEL
+        value: claude-sonnet-4-5-20250929
+      - key: MALE_VOICE_ID
+        sync: false
+      - key: FEMALE_VOICE_ID
+        sync: false
+
+  - type: static
+    name: ai-interview-coach-ui
+    rootDir: frontend
+    staticPublishPath: ./
+    pullRequestPreviewsEnabled: true
